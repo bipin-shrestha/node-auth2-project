@@ -1,6 +1,7 @@
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const errorHandler = require('./auth/errorHandler.js');
 
 const authRouter = require("./auth/auth-router.js");
 const usersRouter = require("./users/users-router.js");
@@ -21,4 +22,7 @@ server.use((err, req, res, next) => { // eslint-disable-line
   });
 });
 
+server.use(errorHandler);
+
 module.exports = server;
+
