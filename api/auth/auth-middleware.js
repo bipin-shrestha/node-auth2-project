@@ -20,10 +20,9 @@ const restricted = (req, res, next) => {
   */
  try {
  const token = req.headers.authorization?.split(' ')[1];
-
   if(token){
-    jwt.verify(token, secret, (err, decodedToken) => {
-      if(err) {
+    jwt.verify(token, JWT_SECRET, (error, decodedToken) => {
+      if(error) {
         next({ apiCode: 401, apiMessage: " Token Invalid " })
       } else {
         req.decodedToken = decodedToken;
@@ -35,7 +34,8 @@ const restricted = (req, res, next) => {
   }
  } 
  catch(error){
-   next({ apiCode: 500, apiMessage: 'error validating credentials', ...err });
+   console.log(error);
+   next({ apiCode: 500, apiMessage: 'error validating credentials', ...error });
  }
 }
 
@@ -50,30 +50,15 @@ const only = role_name => (req, res, next) => {
 
     Pull the decoded token from the req object, to avoid verifying it again!
   */
-//  const token = req.headers.authorization?.split('')[1];
-//  if(token){
-//     if(req.body.role_name == role_name){
-//       jwt.verify(token, secret, (err, decodedToke) => {
-//         if(err) {
-//           next({ apiCode:401, apiMessage: " Token Invalid " })
-//         }else {
-//           req.decodedToken = decodedToken;
-//           next();
-//         }
-//       });
-//     } else {
-//       next({ apiCode: 403, apiMessage: "This is not for you"})
-//     }
-//   }
-const roleName = req.decodeJwt.role_name;
-    if(role_name !== roleName){
-      return res.status(403).json({ "message": "This is not for you" })
-    } else {
+    console.log(req.decodedToken);
+    
+    if(req.decodedToken.role_name == role_name){
       next();
-  }
+    }
+    else{
+      next({ apiCode: 403, apiMessage: "This is not for you" })
+    }
 }
-
-
 
 const checkUsernameExists = async (req, res, next) => {
   /*

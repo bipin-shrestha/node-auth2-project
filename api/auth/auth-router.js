@@ -2,7 +2,7 @@ const router = require("express").Router();
 const { checkUsernameExists, validateRoleName } = require('./auth-middleware');
 const userModel = require('../users/users-model.js');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require("../secrets"); // use this secret!
+const {JWT_SECRET} = require("../secrets"); // use this secret!
 const bcryptjs = require("bcryptjs");
 
 router.post("/register", validateRoleName, async (req, res, next) => {
@@ -17,7 +17,8 @@ router.post("/register", validateRoleName, async (req, res, next) => {
       "role_name": "angel"
     }
    */
-  const credentials = res.body;
+  const credentials = req.body;
+  console.log(credentials);
   try{
     const hash = bcryptjs.hashSync(credentials.password, 10);
     credentials.password = hash;
@@ -56,19 +57,23 @@ router.post("/login", checkUsernameExists, async (req, res, next) => {
   const { username, password } = req.body;
   try{
     const [user] = await userModel.findBy({ username: username });
+    console.log(user);
     if(user && bcryptjs.compareSync(password, user.password)){
       const token = generateToken(user);
+      console.log(token);
       res.status(200).json({ message: 'Welcome to the api', token: token })
     } else {
       next({ apiCode: 401, apiMessage: 'Invalid Credentials'});
     }
   }
   catch(err){
+    console.log(err);
     next({ apiCode: 500, apiMessage: 'db error logging in ', ...err})
   }
 });
 
 const generateToken = (user) => {
+  console.log(user);
   const options = {
     expiresIn: '1 day'
   };
@@ -77,6 +82,9 @@ const generateToken = (user) => {
     username: user.username,
     role_name: user.role_name
   };
+  console.log(payload);
+  console.log(JWT_SECRET);
+  console.log(jwt.sign(payload, JWT_SECRET, options));
   return jwt.sign(payload, JWT_SECRET, options);
   
 }
